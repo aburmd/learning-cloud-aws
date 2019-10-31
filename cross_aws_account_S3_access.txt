@@ -1,0 +1,35 @@
+How to setup cross aws account S3 access:
+
+1)	Set up made through Sourcing AWS Account:
+•	Login to sourcing aws account (XXXXXXX2) and Create a bucket with an access "objects can be public".
+•	Go to bucket, click on permission tab, click on bucket policy tab and apply below details
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "DelegateS3Access",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::XXXXXXX1:root"
+            },
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::source_bucket/*",
+                "arn:aws:s3:::source_bucket"
+            ]
+        }
+    ]
+}
+
+•	Note: The above configuration is allowed account level access (XXXXXXX1).If we want at IAM role level access, add the respective arn there.
+
+2)	Set up made through Target AWS Account
+•	Login to target aws account (XXXXXXX1) and create a IAM user with S3 read/write access permission and create a access key and secret key.
+
+3)	Setup AWS CLI Configuration
+•	Install aws cli in your local desktop and add the credential with proper profile name (refer aws cli setup page for more info). Here, I have setup the profile name as 'target'.
+•	Run the below command. This will sync these two folders 
+aws s3 sync s3://source_bucket s3://target_bucket --delete --source-region us-west-2 --profile target
